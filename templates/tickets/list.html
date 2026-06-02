@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Tickets</h1>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto"><input class="form-control" name="q" placeholder="Search subject" value="{{ request.GET.q }}"></div>
+  <div class="col-auto">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for key, label in ticket_model.STATUS_CHOICES %}
+        <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto">
+    <select name="priority" class="form-select">
+      <option value="">All priorities</option>
+      {% for key, label in ticket_model.PRIORITY_CHOICES %}
+        <option value="{{ key }}" {% if request.GET.priority == key %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table">
+  <thead><tr><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead>
+  <tbody>
+    {% for ticket in tickets %}
+      <tr>
+        <td><a href="{% url 'tickets:detail' pk=ticket.pk %}">{{ ticket.subject }}</a></td>
+        <td>{{ ticket.get_priority_display }}</td>
+        <td>{{ ticket.get_status_display }}</td>
+        <td>{{ ticket.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">No tickets found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if tickets.has_other_pages %}
+  <nav>
+    <ul class="pagination">
+      {% if tickets.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ tickets.previous_page_number }}">Previous</a></li>{% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ tickets.number }} of {{ tickets.paginator.num_pages }}</span></li>
+      {% if tickets.has_next %}<li class="page-item"><a class="page-link" href="?page={{ tickets.next_page_number }}">Next</a></li>{% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Confirm Delete</h1>
+<p>Are you sure you want to delete '{{ ticket.subject }}'?</p>
+<form method="post">{% csrf_token %}
+  <button class="btn btn-danger" type="submit">Confirm</button>
+  <a class="btn btn-secondary" href="{% url 'tickets:detail' pk=ticket.pk %}">Cancel</a>
+</form>
+{% endblock %}

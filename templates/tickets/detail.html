@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ ticket.subject }}</h1>
+<p><strong>Priority:</strong> {{ ticket.get_priority_display }} | <strong>Status:</strong> {{ ticket.get_status_display }}</p>
+<p>{{ ticket.description }}</p>
+
+<h4>Replies</h4>
+<div>
+  {% for reply in replies %}
+    <div class="card mb-2 p-2">
+      <div><strong>{{ reply.user.username }}</strong> - {{ reply.created_at|date:"SHORT_DATETIME_FORMAT" }}</div>
+      <div>{{ reply.message }}</div>
+    </div>
+  {% empty %}
+    <p>No replies yet.</p>
+  {% endfor %}
+</div>
+
+{% if replies.paginator.num_pages > 1 %}
+  <nav>
+    <ul class="pagination">
+      {% if replies.has_previous %}<li class="page-item"><a class="page-link" href="?rpage={{ replies.previous_page_number }}">Previous</a></li>{% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ replies.number }} of {{ replies.paginator.num_pages }}</span></li>
+      {% if replies.has_next %}<li class="page-item"><a class="page-link" href="?rpage={{ replies.next_page_number }}">Next</a></li>{% endif %}
+    </ul>
+  </nav>
+{% endif %}
+
+{% if ticket.status != ticket.STATUS_CLOSED %}
+  <h5>Add Reply</h5>
+  <form method="post" action="{% url 'tickets:reply' pk=ticket.pk %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Reply</button>
+  </form>
+{% else %}
+  <div class="alert alert-warning">This ticket is closed; no new replies allowed.</div>
+{% endif %}
+
+{% if user == ticket.created_by %}
+  <a class="btn btn-secondary" href="{% url 'tickets:edit' pk=ticket.pk %}">Edit</a>
+  <form method="post" action="{% url 'tickets:delete' pk=ticket.pk %}" style="display:inline">{% csrf_token %}<button class="btn btn-danger">Delete</button></form>
+{% endif %}
+
+{% endblock %}
